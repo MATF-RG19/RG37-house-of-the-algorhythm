@@ -13,16 +13,32 @@ static float ball_z_position = 0.1;
 
 static float phi , theta ;
 static float delta_phi , delta_theta ;
+static int BallPosX = 1,BallPosY = 1;
+static int board[12][12]={
+        {-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 , -1},
+        {-1 , 1 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , -1},
+        {-1 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , -1},
+        {-1 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , -1},
+        {-1 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , -1},
+        {-1 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , -1},
+        {-1 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , -1},
+        {-1 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , -1},
+        {-1 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , -1},
+        {-1 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , -1},
+        {-1 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , -1},
+        {-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 , -1}
+        
+    };
 
 int main(int argc,char** argv)
 {
     
-    GLfloat light_ambient[] = { 0.5, 0.5, 0.5, 1 };
-    GLfloat light_diffuse[] = { 0.5, 0.5, 0.5, 1 };
-    GLfloat light_specular[] = { 0.5, 0.5, 0.5, 1 };
     
-    GLfloat light_ambient_spotlight[] = { 0.7, 0.7, 0.7, 1 };
-    GLfloat light_diffuse_spotlight[] = { 0.7, 0.7, 0.7, 1 };
+    
+    
+    
+    GLfloat light_ambient_spotlight[] = { 0.5, 0.5, 0.5, 1 };
+    GLfloat light_diffuse_spotlight[] = { 0.5, 0.5, 0.5, 1 };
     GLfloat light_specular_spotlight[] = { 0.5, 0.5, 0.5, 1 };
     
     
@@ -38,22 +54,14 @@ int main(int argc,char** argv)
     
     glEnable(GL_LIGHTING);
 
-    /*glEnable(GL_LIGHT0);*/
-    glEnable(GL_LIGHT1);
-
-    glLightfv(GL_LIGHT0, GL_AMBIENT, light_ambient);
-    glLightfv(GL_LIGHT0, GL_DIFFUSE, light_diffuse);
-    glLightfv(GL_LIGHT0, GL_SPECULAR, light_specular);
+    glEnable(GL_LIGHT0);
     
     
-    
-    glLightfv(GL_LIGHT1, GL_AMBIENT, light_ambient_spotlight);
-    glLightfv(GL_LIGHT1, GL_DIFFUSE, light_diffuse_spotlight);
-    glLightfv(GL_LIGHT1, GL_SPECULAR, light_specular_spotlight);
+    glLightfv(GL_LIGHT0, GL_AMBIENT, light_ambient_spotlight);
+    glLightfv(GL_LIGHT0, GL_DIFFUSE, light_diffuse_spotlight);
+    glLightfv(GL_LIGHT0, GL_SPECULAR, light_specular_spotlight);
   
 
-    
-    
     phi = pi/4;
     theta = pi / 4;
     delta_phi = delta_theta = pi / 90;
@@ -76,38 +84,48 @@ static void on_keyboard(unsigned char key, int x, int y)
         exit(0);
         break;
     case 'w':
-        ball_y_movement+=-0.2;
+        if(board[BallPosX][BallPosY+1] != -1)
+            {
+                ball_y_movement+=-0.2;
+                board[BallPosX][BallPosY] = 0;
+                BallPosY++;
+                board[BallPosX][BallPosY] = 1;
+                
+            }
+        
         glutPostRedisplay();
         break;
     case 's':
-        ball_y_movement+=0.2;
+        if(board[BallPosX][BallPosY-1] != -1)
+        {
+            ball_y_movement+=0.2;
+            board[BallPosX][BallPosY] = 0;
+            BallPosY--;
+            board[BallPosX][BallPosY] = 1;
+            
+        }
         glutPostRedisplay();
         break;
     case 'a':
-        ball_x_movement+=0.2;
+        if(board[BallPosX-1][BallPosY] != -1)
+        {
+            ball_x_movement+=0.2;
+            board[BallPosX][BallPosY] = 0;
+            BallPosX--;
+            board[BallPosX][BallPosY] = 1;
+            
+        }
         glutPostRedisplay();
         break;
     case 'd':
-        ball_x_movement+=-0.2;
-        glutPostRedisplay();
-        break;
-        
-    case 'r':
-        cutoffButton+=1;
-        glDisable(GL_LIGHT1);
-        glEnable(GL_LIGHT1);
-        glutPostRedisplay();
-        break;
-    case 'R':
-        cutoffButton-=1;
-        glutPostRedisplay();
-        break;
-    case 'f':
-        spotExponentButton+=1;
-        glutPostRedisplay();
-        break;
-    case 'F':
-        spotExponentButton-=1;
+        if(board[BallPosX+1][BallPosY] != -1)
+        {
+            ball_x_movement-=0.2;
+            board[BallPosX][BallPosY] = 0;
+            BallPosX++;
+            board[BallPosX][BallPosY] = 1;
+            
+        }
         glutPostRedisplay();
         break;
         
@@ -181,15 +199,13 @@ static void on_display(void)
 
     /*glScalef(3,3,3);*/
 
-    /*GLfloat light_position[] = { 0,0,1,1};
-    glLightfv(GL_LIGHT0, GL_POSITION, light_position);*/
 
     GLfloat spot_direction[] = {0,0,-1};
-    glLightfv(GL_LIGHT1,GL_SPOT_DIRECTION, spot_direction);
-    glLightf(GL_LIGHT1,GL_SPOT_CUTOFF,24.0);
-    glLightf(GL_LIGHT1,GL_SPOT_EXPONENT,40.0);
+    glLightfv(GL_LIGHT0,GL_SPOT_DIRECTION, spot_direction);
+    glLightf(GL_LIGHT0,GL_SPOT_CUTOFF,24.0);
+    glLightf(GL_LIGHT0,GL_SPOT_EXPONENT,40.0);
 
-    glLightfv(GL_LIGHT1, GL_POSITION, light_position_spotlight);
+    glLightfv(GL_LIGHT0, GL_POSITION, light_position_spotlight);
     
    /* 
     glPushMatrix();
