@@ -10,6 +10,13 @@ const static float pi = 3.141592653589793;
 static float ball_x_movement=0;
 static float ball_y_movement=0;
 static float ball_z_position = 0.1;
+static float animation_timer = 0;
+static int ongoing_animation = 0;
+enum player_direction{
+ 
+    UP,DOWN,LEFT,RIGHT
+    
+};
 
 static float phi , theta ;
 static float delta_phi , delta_theta ;
@@ -29,17 +36,79 @@ static int board[12][12]={
         {-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 , -1}
         
     };
+    
+void animate_movement(int player_direction){
+ 
+    switch(player_direction)
+    {
+        case UP:
+            if(animation_timer <= 0.2)
+            {
+                ball_y_movement+=-0.05;
+                animation_timer+=0.05;
+            }
+            else 
+            {
+                ongoing_animation = 0;
+                return;
+            }
+        break;
+        case DOWN:
+            if(animation_timer <= 0.2)
+            {
+                ball_y_movement+=0.05;
+                animation_timer+=0.05;
+            }
+            else 
+            {
+                ongoing_animation = 0;
+                return;
+            }
+        break;
+        case LEFT:
+            if(animation_timer <= 0.2)
+            {
+                ball_x_movement+=0.05;
+                animation_timer+=0.05;
+            }
+            else 
+            {
+                ongoing_animation = 0;
+                return;
+            }
+            
+        break;
+        case RIGHT:
+            if(animation_timer <= 0.2)
+            {
+                ball_x_movement+=-0.05;
+                animation_timer+=0.05;
+            }
+            else 
+            {
+                ongoing_animation = 0;
+                return;
+            }           
+        break;
+    }
+    
+            
+    glutPostRedisplay();
+    
+    glutTimerFunc(50,animate_movement,player_direction);
+}
 
 int main(int argc,char** argv)
 {
     
     
     
-    
-    
     GLfloat light_ambient_spotlight[] = { 0.5, 0.5, 0.5, 1 };
     GLfloat light_diffuse_spotlight[] = { 0.5, 0.5, 0.5, 1 };
     GLfloat light_specular_spotlight[] = { 0.5, 0.5, 0.5, 1 };
+  
+    GLfloat light_ambient[] = { 0.3, 0.3, 0.3, 1 };
+    GLfloat light_diffuse[] = { 0.3, 0.3, 0.3, 1 };
     
     
     glutInit(&argc, argv);
@@ -55,11 +124,15 @@ int main(int argc,char** argv)
     glEnable(GL_LIGHTING);
 
     glEnable(GL_LIGHT0);
-    
+    glEnable(GL_LIGHT1);
     
     glLightfv(GL_LIGHT0, GL_AMBIENT, light_ambient_spotlight);
     glLightfv(GL_LIGHT0, GL_DIFFUSE, light_diffuse_spotlight);
     glLightfv(GL_LIGHT0, GL_SPECULAR, light_specular_spotlight);
+  
+    
+    glLightfv(GL_LIGHT1, GL_AMBIENT, light_ambient);
+    glLightfv(GL_LIGHT1, GL_DIFFUSE, light_diffuse);
   
 
     phi = pi/4;
@@ -83,53 +156,61 @@ static void on_keyboard(unsigned char key, int x, int y)
     case 27:
         exit(0);
         break;
+
     case 'w':
-        if(board[BallPosX][BallPosY+1] != -1)
+        if(board[BallPosX][BallPosY+1] != -1 && ongoing_animation == 0)
             {
-                ball_y_movement+=-0.2;
+                animation_timer = 0;
+                ongoing_animation = 1;
+                glutTimerFunc(0,animate_movement,UP);
+                
                 board[BallPosX][BallPosY] = 0;
                 BallPosY++;
                 board[BallPosX][BallPosY] = 1;
                 
             }
-        
-        glutPostRedisplay();
         break;
     case 's':
-        if(board[BallPosX][BallPosY-1] != -1)
+        if(board[BallPosX][BallPosY-1] != -1 && ongoing_animation == 0)
         {
-            ball_y_movement+=0.2;
+            animation_timer = 0;
+            ongoing_animation = 1;
+            glutTimerFunc(0,animate_movement,DOWN);
+                
             board[BallPosX][BallPosY] = 0;
             BallPosY--;
             board[BallPosX][BallPosY] = 1;
             
         }
-        glutPostRedisplay();
         break;
     case 'a':
-        if(board[BallPosX-1][BallPosY] != -1)
+        if(board[BallPosX-1][BallPosY] != -1 && ongoing_animation == 0)
         {
-            ball_x_movement+=0.2;
+            animation_timer = 0;
+            ongoing_animation = 1;
+            glutTimerFunc(0,animate_movement,LEFT);
+ 
+            
             board[BallPosX][BallPosY] = 0;
             BallPosX--;
             board[BallPosX][BallPosY] = 1;
             
         }
-        glutPostRedisplay();
         break;
     case 'd':
-        if(board[BallPosX+1][BallPosY] != -1)
+        if(board[BallPosX+1][BallPosY] != -1 && ongoing_animation == 0)
         {
-            ball_x_movement-=0.2;
+            
+            animation_timer = 0;
+            ongoing_animation = 1;
+            glutTimerFunc(0,animate_movement,RIGHT);
+ 
             board[BallPosX][BallPosY] = 0;
             BallPosX++;
             board[BallPosX][BallPosY] = 1;
             
         }
-        glutPostRedisplay();
         break;
-        
-        
     case 'j':
         phi -= delta_phi;
         if (phi > 2 * pi) {
@@ -177,7 +258,8 @@ static void on_reshape(int width, int height)
 static void on_display(void)
 {
     GLfloat light_position_spotlight[] = {ball_x_movement,ball_y_movement,1,1};
-        
+    GLfloat light_position[] = {0,0,0,0};
+    
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
    /*
@@ -206,7 +288,7 @@ static void on_display(void)
     glLightf(GL_LIGHT0,GL_SPOT_EXPONENT,40.0);
 
     glLightfv(GL_LIGHT0, GL_POSITION, light_position_spotlight);
-    
+    glLightfv(GL_LIGHT1, GL_POSITION, light_position);
    /* 
     glPushMatrix();
         glTranslatef(ball_x_movement,ball_y_movement,0.8);
