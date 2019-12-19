@@ -10,8 +10,8 @@ const static float pi = 3.141592653589793;
 static float ball_x_movement=0;
 static float ball_y_movement=0;
 static float ball_z_position = 0.1;
-static float animation_timer = 0;
-static int ongoing_animation = 0;
+static float animation_timer = 0; /* Varijabla koja se inkrementira do odredjene vrednosti radi animacije objekata*/
+static int ongoing_animation = 0; /* Ako se animacija odvija jos uvek ili ne*/
 enum player_direction{
  
     UP,DOWN,LEFT,RIGHT
@@ -24,7 +24,7 @@ static int BallPosX = 1,BallPosY = 1;
 static int board[12][12]={
         {-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 , -1},
         {-1 , 1 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , -1},
-        {-1 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , -1},
+        {-1 , 2 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , -1},
         {-1 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , -1},
         {-1 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , -1},
         {-1 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , -1},
@@ -36,16 +36,30 @@ static int board[12][12]={
         {-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 , -1}
         
     };
+#define Animation_speed 0.025   /*intervali koliko se povecava varijabla animation_timer*/
+#define Animation_threshold_movement 0.2 /* Ukupna kolicina "vremena" koliko ce se odvijati animacija za pomeranje*/
+#define Animation_threshold_hit 0.1 /*Ukupna kolicina "vremena" koliko ce se odvijati animacija za udarac o protivnika*/
+    
+void printMatrix()
+{
+    int i,j;
+    for(i = 0;i<12;i++)
+    {
+        for(j=0;j<12;j++)
+            printf("%d ",board[i][j]);
+        printf("\n");
+    }
+}
     
 void animate_movement(int player_direction){
  
     switch(player_direction)
     {
         case UP:
-            if(animation_timer <= 0.2)
+            if(animation_timer <= Animation_threshold_movement)
             {
-                ball_y_movement+=-0.05;
-                animation_timer+=0.05;
+                ball_y_movement+=-Animation_speed;
+                animation_timer+=Animation_speed;
             }
             else 
             {
@@ -54,10 +68,10 @@ void animate_movement(int player_direction){
             }
         break;
         case DOWN:
-            if(animation_timer <= 0.2)
+            if(animation_timer <= Animation_threshold_movement)
             {
-                ball_y_movement+=0.05;
-                animation_timer+=0.05;
+                ball_y_movement+=Animation_speed;
+                animation_timer+=Animation_speed;
             }
             else 
             {
@@ -66,10 +80,10 @@ void animate_movement(int player_direction){
             }
         break;
         case LEFT:
-            if(animation_timer <= 0.2)
+            if(animation_timer <= Animation_threshold_movement)
             {
-                ball_x_movement+=0.05;
-                animation_timer+=0.05;
+                ball_x_movement+=Animation_speed;
+                animation_timer+=Animation_speed;
             }
             else 
             {
@@ -79,10 +93,10 @@ void animate_movement(int player_direction){
             
         break;
         case RIGHT:
-            if(animation_timer <= 0.2)
+            if(animation_timer <= Animation_threshold_movement)
             {
-                ball_x_movement+=-0.05;
-                animation_timer+=0.05;
+                ball_x_movement+=-Animation_speed;
+                animation_timer+=Animation_speed;
             }
             else 
             {
@@ -92,10 +106,102 @@ void animate_movement(int player_direction){
         break;
     }
     
-            
+    
+    ball_z_position=0.1 + sin(5*animation_timer*pi)/10; /*poskok igraca*/
     glutPostRedisplay();
     
     glutTimerFunc(50,animate_movement,player_direction);
+}
+
+void animate_hit(int player_direction){
+    
+        switch(player_direction)
+        {
+        case UP:
+            if(animation_timer <= Animation_threshold_movement)
+            {
+                if(animation_timer < Animation_threshold_movement/2)
+                {
+                    ball_y_movement+=-Animation_speed;
+                }
+                else
+                {
+                    ball_y_movement+=Animation_speed;
+                }
+                animation_timer+=Animation_speed;
+            }
+            else 
+            {
+                ongoing_animation = 0;
+                return;
+            }
+        break;
+        case DOWN:
+            if(animation_timer <= Animation_threshold_movement)
+            {
+                if(animation_timer < Animation_threshold_movement/2)
+                {
+                    ball_y_movement+=Animation_speed;
+                }
+                else
+                {
+                    ball_y_movement+=-Animation_speed;
+                }
+                animation_timer+=Animation_speed;
+            }
+            else 
+            {
+                ongoing_animation = 0;
+                return;
+            }
+        break;
+        case LEFT:
+            if(animation_timer <= Animation_threshold_movement)
+            {
+                if(animation_timer < Animation_threshold_movement/2)
+                {
+                    ball_x_movement+=Animation_speed;
+                }
+                else
+                {
+                    ball_x_movement+=-Animation_speed;
+                }
+                animation_timer+=Animation_speed;
+            }
+            else 
+            {
+                ongoing_animation = 0;
+                return;
+            }
+            
+        break;
+        case RIGHT:
+            if(animation_timer <= Animation_threshold_movement)
+            {
+                if(animation_timer < Animation_threshold_movement/2)
+                {
+                    ball_x_movement+=-Animation_speed;
+                }
+                else
+                {
+                    ball_x_movement+=Animation_speed;
+                }
+                animation_timer+=Animation_speed;
+            }
+            else 
+            {
+                ongoing_animation = 0;
+                return;
+            }           
+        break;
+    }
+    
+    
+    ball_z_position=0.1 + sin(5*animation_timer*pi)/10; /*poskok igraca*/
+    glutPostRedisplay();
+    
+    glutTimerFunc(50,animate_hit,player_direction);
+    
 }
 
 int main(int argc,char** argv)
@@ -158,20 +264,32 @@ static void on_keyboard(unsigned char key, int x, int y)
         break;
 
     case 'w':
-        if(board[BallPosX][BallPosY+1] != -1 && ongoing_animation == 0)
-            {
-                animation_timer = 0;
-                ongoing_animation = 1;
-                glutTimerFunc(0,animate_movement,UP);
-                
-                board[BallPosX][BallPosY] = 0;
-                BallPosY++;
-                board[BallPosX][BallPosY] = 1;
-                
-            }
+        if(board[BallPosX][BallPosY+1] == 0 && ongoing_animation == 0)
+        {
+            animation_timer = 0;
+            ongoing_animation = 1;
+            glutTimerFunc(0,animate_movement,UP);
+            
+            board[BallPosX][BallPosY] = 0;
+            BallPosY++;
+            board[BallPosX][BallPosY] = 1;
+            
+            printMatrix();
+            
+            
+        }
+        else if(board[BallPosX][BallPosY+1] == 2 && ongoing_animation == 0)
+        {
+            animation_timer = 0;
+            ongoing_animation = 1;
+            glutTimerFunc(0,animate_hit,UP);
+            printMatrix();
+            
+        }
+            
         break;
     case 's':
-        if(board[BallPosX][BallPosY-1] != -1 && ongoing_animation == 0)
+        if(board[BallPosX][BallPosY-1] == 0 && ongoing_animation == 0)
         {
             animation_timer = 0;
             ongoing_animation = 1;
@@ -182,9 +300,17 @@ static void on_keyboard(unsigned char key, int x, int y)
             board[BallPosX][BallPosY] = 1;
             
         }
+        else if(board[BallPosX][BallPosY-1] == 2 && ongoing_animation == 0)
+        {
+            animation_timer = 0;
+            ongoing_animation = 1;
+            glutTimerFunc(0,animate_hit,DOWN);
+            printMatrix();
+            
+        }
         break;
     case 'a':
-        if(board[BallPosX-1][BallPosY] != -1 && ongoing_animation == 0)
+        if(board[BallPosX-1][BallPosY] == 0 && ongoing_animation == 0)
         {
             animation_timer = 0;
             ongoing_animation = 1;
@@ -196,9 +322,17 @@ static void on_keyboard(unsigned char key, int x, int y)
             board[BallPosX][BallPosY] = 1;
             
         }
+        else if(board[BallPosX-1][BallPosY] == 2 && ongoing_animation == 0)
+        {
+            animation_timer = 0;
+            ongoing_animation = 1;
+            glutTimerFunc(0,animate_hit,LEFT);
+            printMatrix();
+            
+        }
         break;
     case 'd':
-        if(board[BallPosX+1][BallPosY] != -1 && ongoing_animation == 0)
+        if(board[BallPosX+1][BallPosY] == 0 && ongoing_animation == 0)
         {
             
             animation_timer = 0;
@@ -208,6 +342,14 @@ static void on_keyboard(unsigned char key, int x, int y)
             board[BallPosX][BallPosY] = 0;
             BallPosX++;
             board[BallPosX][BallPosY] = 1;
+            
+        }
+        else if(board[BallPosX+1][BallPosY] == 2 && ongoing_animation == 0)
+        {
+            animation_timer = 0;
+            ongoing_animation = 1;
+            glutTimerFunc(0,animate_hit,RIGHT);
+            printMatrix();
             
         }
         break;
@@ -275,8 +417,8 @@ static void on_display(void)
     glLoadIdentity();
     gluLookAt( 2*cos(theta) * cos(phi)+ball_x_movement, 
                2*cos(theta) * sin(phi)+ball_y_movement,
-               2*sin(theta), 
-              ball_x_movement, ball_y_movement, ball_z_position, 
+               2.5*sin(theta), 
+              ball_x_movement, ball_y_movement, 0.1, 
               0, 0, 1);
 
     /*glScalef(3,3,3);*/
