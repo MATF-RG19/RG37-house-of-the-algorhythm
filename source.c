@@ -227,6 +227,7 @@ int main(int argc,char** argv)
     glutReshapeFunc(on_reshape);
     glutDisplayFunc(on_display);
     
+    
     glEnable(GL_LIGHTING);
 
     glEnable(GL_LIGHT0);
@@ -411,8 +412,10 @@ static void on_display(void)
     printf("ball_x_movement: %0.2f\n",ball_x_movement);
     printf("ball_y_movement: %0.2f\n",ball_y_movement);
     */
-     
-   
+    
+    glLightModeli(GL_LIGHT_MODEL_TWO_SIDE,1);
+    glEnable(GL_NORMALIZE);
+    
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
     gluLookAt( 2*cos(theta) * cos(phi)+ball_x_movement, 
@@ -446,6 +449,10 @@ static void on_display(void)
     
     GLfloat ambient_coeffsFloor[] = {0.5, 0.164706, 0.164706, 1 };
     GLfloat diffuse_coeffsFloor[] = {0.5, 0.164706, 0.164706, 1 };
+    
+    GLfloat ambient_coeffsFloorBlue[] = {0.5, 0.164706, 0.8, 1 };
+    GLfloat diffuse_coeffsFloorBlue[] = {0.5, 0.164706, 0.8, 1 };
+    
     GLfloat specular_coeffs[] = {1, 1, 1, 1 };
 
     GLfloat shininess1 = 30;
@@ -454,10 +461,10 @@ static void on_display(void)
     GLfloat diffuse_coeffsBlack[] = { 0, 0, 0, 1 };
     GLfloat specular_coeffs2[] = { 0, 0, 0, 1 };
     
-    /*glPushMatrix();*/
-        /*glTranslatef(-0.9,-0.9,-0.1);*/
-      /*  glTranslatef(0,0,-0.1);
-        glScalef(20,20,1);
+    /*glPushMatrix();
+        glTranslatef(-0.9,-0.9,-0.1);
+        glScalef(10,10,1);
+        
         glMaterialfv(GL_FRONT, GL_AMBIENT, ambient_coeffsFloor);
         glMaterialfv(GL_FRONT, GL_DIFFUSE, diffuse_coeffsFloor);
         glMaterialfv(GL_FRONT, GL_SPECULAR, specular_coeffs);
@@ -472,7 +479,7 @@ static void on_display(void)
             glPushMatrix();
             for(j=0;j<10;j++)
             {
-               /* toRename*/
+               
                 glMaterialfv(GL_FRONT, GL_AMBIENT, ambient_coeffsBlack);
                 glMaterialfv(GL_FRONT, GL_DIFFUSE, diffuse_coeffsBlack);
                 glMaterialfv(GL_FRONT, GL_SPECULAR, specular_coeffs);
@@ -488,6 +495,88 @@ static void on_display(void)
             glTranslatef(0,-0.2,0);
         }
     glPopMatrix();
+    
+    glPushMatrix();
+        glTranslatef(-2,0,0.1);
+        for(i =0;i<10;i++)
+        {
+            if(i!= 5 && i!= 6)
+            {
+                glMaterialfv(GL_FRONT, GL_AMBIENT, ambient_coeffsBlack);
+                glMaterialfv(GL_FRONT, GL_DIFFUSE, diffuse_coeffsBlack);
+                glMaterialfv(GL_FRONT, GL_SPECULAR, specular_coeffs);
+                glutWireCube(0.2);
+                glMaterialfv(GL_FRONT, GL_AMBIENT, ambient_coeffsFloor);
+                glMaterialfv(GL_FRONT, GL_DIFFUSE, diffuse_coeffsFloor);
+                glMaterialfv(GL_FRONT, GL_SPECULAR, specular_coeffs);
+                glMaterialf(GL_FRONT, GL_SHININESS, shininess1);               
+                glutSolidCube(0.2);
+                
+            }
+                glTranslatef(0,-0.2,0);
+        }
+    glPopMatrix();
+
+    glPushMatrix();
+        glTranslatef(0,-2,0.1);
+        for(i =0;i<11;i++)
+        {
+            glMaterialfv(GL_FRONT, GL_AMBIENT, ambient_coeffsBlack);
+            glMaterialfv(GL_FRONT, GL_DIFFUSE, diffuse_coeffsBlack);
+            glMaterialfv(GL_FRONT, GL_SPECULAR, specular_coeffs);
+            glutWireCube(0.2);
+            glMaterialfv(GL_FRONT, GL_AMBIENT, ambient_coeffsFloor);
+            glMaterialfv(GL_FRONT, GL_DIFFUSE, diffuse_coeffsFloor);
+            glMaterialfv(GL_FRONT, GL_SPECULAR, specular_coeffs);
+            glMaterialf(GL_FRONT, GL_SHININESS, shininess1);               
+            glutSolidCube(0.2);
+            glTranslatef(-0.2,0,0);
+        }
+    glPopMatrix();
+    
+    glPushMatrix();
+    glTranslatef(-2,-0.8,-0.1);
+        for(i=0;i<4;i++)
+        {
+            glPushMatrix();
+            for(j=0;j<6;j++) 
+            {
+                    if(i != 0 && i!=3)
+                    {
+                        glMaterialfv(GL_FRONT, GL_AMBIENT, ambient_coeffsBlack);
+                        glMaterialfv(GL_FRONT, GL_DIFFUSE, diffuse_coeffsBlack);
+                        glMaterialfv(GL_FRONT, GL_SPECULAR, specular_coeffs);
+                        glutWireCube(0.2);
+                        glMaterialfv(GL_FRONT, GL_AMBIENT, ambient_coeffsFloorBlue);
+                        glMaterialfv(GL_FRONT, GL_DIFFUSE, diffuse_coeffsFloorBlue);
+                        glMaterialfv(GL_FRONT, GL_SPECULAR, specular_coeffs);
+                        glMaterialf(GL_FRONT, GL_SHININESS, shininess1);               
+                        glutSolidCube(0.2);
+                    }
+                    else
+                    {
+                        glPushMatrix();
+                            glTranslatef(0,0,0.2);
+                            glMaterialfv(GL_FRONT, GL_AMBIENT, ambient_coeffsBlack);
+                            glMaterialfv(GL_FRONT, GL_DIFFUSE, diffuse_coeffsBlack);
+                            glMaterialfv(GL_FRONT, GL_SPECULAR, specular_coeffs);
+                            glutWireCube(0.2);
+                            glMaterialfv(GL_FRONT, GL_AMBIENT, ambient_coeffsFloorBlue);
+                            glMaterialfv(GL_FRONT, GL_DIFFUSE, diffuse_coeffsFloorBlue);
+                            glMaterialfv(GL_FRONT, GL_SPECULAR, specular_coeffs);
+                            glMaterialf(GL_FRONT, GL_SHININESS, shininess1);               
+                            glutSolidCube(0.2);
+                            
+                        glPopMatrix();
+                    }
+                    glTranslatef(-0.2,0,0);
+                
+            }
+            glPopMatrix();
+            glTranslatef(0,-0.2,0);
+        }
+    glPopMatrix();
+    
     
     /*sfere*/
     glPushMatrix();
