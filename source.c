@@ -6,9 +6,10 @@ static void on_keyboard(unsigned char key, int x, int y);
 static void on_reshape(int width, int height);
 static void on_display(void);
 
+static float timer = 0;
 const static float pi = 3.141592653589793;
-static float ball_x_movement=0;
-static float ball_y_movement=0;
+static float ball_x_movement=-1;
+static float ball_y_movement=-1;
 static float ball_z_position = 0.1;
 static float animation_timer = 0; /* Varijabla koja se inkrementira do odredjene vrednosti radi animacije objekata*/
 static int ongoing_animation = 0; /* Ako se animacija odvija jos uvek ili ne*/
@@ -20,10 +21,10 @@ enum player_direction{
 
 static float phi , theta ;
 static float delta_phi , delta_theta ;
-static int BallPosX = 1,BallPosY = 1;
-static int board[12][12]={
+static int BallPosX ,BallPosY;
+static int board[21][12]={
         {-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 , -1},
-        {-1 , 1 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , -1},
+        {-1 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , -1},
         {-1 , 2 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , -1},
         {-1 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , -1},
         {-1 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , -1},
@@ -33,12 +34,84 @@ static int board[12][12]={
         {-1 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , -1},
         {-1 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , -1},
         {-1 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , -1},
-        {-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 , -1}
+        {-1 ,-1 ,-1 ,-1 ,-1 ,-1 , 0 , 0 ,-1 ,-1 ,-1 , -1},
+        {-1 ,-1 ,-1 ,-1 ,-1 ,-1 , 0 , 0 ,-1 ,-1 ,-1 , -1},
+        {-1 ,-1 ,-1 ,-1 ,-1 ,-1 , 0 , 0 ,-1 ,-1 ,-1 , -1},
+        {-1 ,-1 ,-1 ,-1 ,-1 ,-1 , 0 , 0 ,-1 ,-1 ,-1 , -1},
+        {-1 ,-1 ,-1 ,-1 ,-1 ,-1 , 0 , 0 ,-1 ,-1 ,-1 , -1},
+        {-1 ,-1 ,-1 ,-1 ,-1 ,-1 , 0 , 0 ,-1 ,-1 ,-1 , -1},
+        {-1 ,-1 ,-1 ,-1 ,-1 ,-1 , 0 , 0 ,-1 ,-1 ,-1 , -1},
+        {-1 ,-1 ,-1 ,-1 ,-1 ,-1 , 0 , 0 ,-1 ,-1 ,-1 , -1},
+        {-1 ,-1 ,-1 ,-1 ,-1 ,-1 , 0 , 0 ,-1 ,-1 ,-1 , -1},
+        {-1 ,-1 ,-1 ,-1 ,-1 ,-1 , 0 , 0 ,-1 ,-1 ,-1 , -1}
         
     };
+
+GLubyte rasters[4*24] = {
+    0b00011111, 0b11111000,
+    0b00011111, 0b11111000,
+    0b00011111, 0b11111000,
+    0b00011111, 0b11111000,
+    0b00011111, 0b11111000,
+    0b00011111, 0b11111000,
+    0b00011111, 0b11111000,
+    0b00011111, 0b11111000,
+    0b00011111, 0b11111000,
+    0b00011111, 0b11111000,
+    0b00011111, 0b11111000,
+    0b00011111, 0b11111000,
+         
+    0b00011111, 0b11111000,
+    0b00011111, 0b11111000,
+    0b00011111, 0b11111000,
+    0b00011111, 0b11111000,
+    0b00011111, 0b11111000,
+    0b00011111, 0b11111000,
+    0b00011111, 0b11111000,
+    0b00011111, 0b11111000,
+    0b00011111, 0b11111000,
+    0b00011111, 0b11111000,
+    0b00011111, 0b11111000,
+    0b00011111, 0b11111000,
+    
+    0b00011111, 0b11111000,
+    0b00011111, 0b11111000,
+    0b00011111, 0b11111000,
+    0b00011111, 0b11111000,
+    0b00011111, 0b11111000,
+    0b00011111, 0b11111000,
+    0b00011111, 0b11111000,
+    0b00011111, 0b11111000,
+    0b00011111, 0b11111000,
+    0b00011111, 0b11111000,
+    0b00011111, 0b11111000,
+    0b00011111, 0b11111000,
+        
+    0b00011111, 0b11111000,
+    0b00011111, 0b11111000,
+    0b00011111, 0b11111000,
+    0b00011111, 0b11111000,
+    0b00011111, 0b11111000,
+    0b00011111, 0b11111000,
+    0b00011111, 0b11111000,
+    0b00011111, 0b11111000,
+    0b00011111, 0b11111000,
+    0b00011111, 0b11111000,
+    0b00011111, 0b11111000,
+    0b00011111, 0b11111000,
+};
+
 #define Animation_speed 0.025   /*intervali koliko se povecava varijabla animation_timer*/
 #define Animation_threshold_movement 0.2 /* Ukupna kolicina "vremena" koliko ce se odvijati animacija za pomeranje*/
 #define Animation_threshold_hit 0.1 /*Ukupna kolicina "vremena" koliko ce se odvijati animacija za udarac o protivnika*/
+    
+void floorMaterial(GLfloat *ambient,GLfloat *diffuse,GLfloat *specular)
+{
+
+        glMaterialfv(GL_FRONT, GL_AMBIENT, ambient);
+        glMaterialfv(GL_FRONT, GL_DIFFUSE, diffuse);
+        glMaterialfv(GL_FRONT, GL_SPECULAR, specular);
+}
     
 void printMatrix()
 {
@@ -49,6 +122,13 @@ void printMatrix()
             printf("%d ",board[i][j]);
         printf("\n");
     }
+}
+
+void dance(int var)
+{
+    timer +=0.0004;
+    glutPostRedisplay();
+    glutTimerFunc(0,dance,0);
 }
     
 void animate_movement(int player_direction){
@@ -206,12 +286,13 @@ void animate_hit(int player_direction){
 
 int main(int argc,char** argv)
 {
-    
+    BallPosX = (-ball_x_movement)/0.2 + 1;
+    BallPosY = (-ball_y_movement)/0.2 + 1;
     
     
     GLfloat light_ambient_spotlight[] = { 0.5, 0.5, 0.5, 1 };
     GLfloat light_diffuse_spotlight[] = { 0.5, 0.5, 0.5, 1 };
-    GLfloat light_specular_spotlight[] = { 0.5, 0.5, 0.5, 1 };
+    GLfloat light_specular_spotlight[]= { 0.5, 0.5, 0.5, 1 };
   
     GLfloat light_ambient[] = { 0.3, 0.3, 0.3, 1 };
     GLfloat light_diffuse[] = { 0.3, 0.3, 0.3, 1 };
@@ -221,7 +302,7 @@ int main(int argc,char** argv)
     glutInitDisplayMode(GLUT_RGB | GLUT_DEPTH | GLUT_DOUBLE);
 
     glutInitWindowSize(700, 700);
-    glutInitWindowPosition(500, 200);
+    glutInitWindowPosition(500, 0);
     glutCreateWindow(argv[0]);
     glutKeyboardFunc(on_keyboard);
     glutReshapeFunc(on_reshape);
@@ -246,6 +327,9 @@ int main(int argc,char** argv)
     theta = pi / 4;
     delta_phi = delta_theta = pi / 90;
     
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+    
+    
     glClearColor(0.2, 0.2, 0.2, 0);
     glEnable(GL_DEPTH_TEST);
     
@@ -253,8 +337,6 @@ int main(int argc,char** argv)
     glutMainLoop();
 
     return 0;
-    
-    
 }
 
 static void on_keyboard(unsigned char key, int x, int y)
@@ -276,8 +358,6 @@ static void on_keyboard(unsigned char key, int x, int y)
             board[BallPosX][BallPosY] = 1;
             
             printMatrix();
-            
-            
         }
         else if(board[BallPosX][BallPosY+1] == 2 && ongoing_animation == 0)
         {
@@ -386,6 +466,10 @@ static void on_keyboard(unsigned char key, int x, int y)
         }
         glutPostRedisplay();
         break;
+    case 'g':
+        glutTimerFunc(0,dance,0);
+        break;
+        
     }
 }
 
@@ -396,15 +480,41 @@ static void on_reshape(int width, int height)
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     gluPerspective(90, (float) width / height, 1, 40);
+    
+    printf("?");
+    
 }
 
 static void on_display(void)
 {
-    GLfloat light_position_spotlight[] = {ball_x_movement,ball_y_movement,1,1};
+    
+    GLfloat light_position_spotlight[] = {ball_x_movement,ball_y_movement,1.5,1};
     GLfloat light_position[] = {0,0,0,0};
     
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    glOrtho(0, 450, 0, 450, 0, 1.0);
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+    glDisable(GL_LIGHTING);
 
+    glRasterPos2i(20+(int)timer%100, 20);
+    
+    /*Bitmapa pokretnih linija*/
+    glColor3f(0.0, 0.5, 0.8);
+    int z;
+    for(z=0;z<3;z++)
+    {
+        
+        glBitmap(16,48,0.0, 0.0,70.0, 0.0,rasters);
+    }
+ 
+    printf("%f\n",timer);
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    gluPerspective(90, 1, 1, 40);
    /*
     printf("5*cos(theta)*cos(phi)+ball_x_movement = %f\n", 5 * cos(theta) * cos(phi)+ball_x_movement);
     printf("5 * cos(theta) * sin(phi)+ball_y_movement = %f\n",5 * cos(theta) * sin(phi)+ball_y_movement);
@@ -412,9 +522,6 @@ static void on_display(void)
     printf("ball_x_movement: %0.2f\n",ball_x_movement);
     printf("ball_y_movement: %0.2f\n",ball_y_movement);
     */
-    
-    glLightModeli(GL_LIGHT_MODEL_TWO_SIDE,1);
-    glEnable(GL_NORMALIZE);
     
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
@@ -424,6 +531,7 @@ static void on_display(void)
               ball_x_movement, ball_y_movement, 0.1, 
               0, 0, 1);
 
+    glEnable(GL_LIGHTING);
     /*glScalef(3,3,3);*/
 
 
@@ -434,13 +542,9 @@ static void on_display(void)
 
     glLightfv(GL_LIGHT0, GL_POSITION, light_position_spotlight);
     glLightfv(GL_LIGHT1, GL_POSITION, light_position);
-   /* 
-    glPushMatrix();
-        glTranslatef(ball_x_movement,ball_y_movement,0.8);
-        glutSolidCube(0.1);
-    glPopMatrix();*/
-	/*Kocke koje obelezavaju platforme na kojima ce se nalaziti igrac i protivnici*/
-	
+
+    
+    
     
     /*rename Colors*/
     
@@ -453,9 +557,8 @@ static void on_display(void)
     GLfloat ambient_coeffsFloorBlue[] = {0.5, 0.164706, 0.8, 1 };
     GLfloat diffuse_coeffsFloorBlue[] = {0.5, 0.164706, 0.8, 1 };
     
-    GLfloat specular_coeffs[] = {1, 1, 1, 1 };
+    GLfloat specular_coeffs[] = {0.2, 0.2, 0.2, 1 };
 
-    GLfloat shininess1 = 30;
     
     GLfloat ambient_coeffsBlack[] = { 0, 0, 0, 1 };
     GLfloat diffuse_coeffsBlack[] = { 0, 0, 0, 1 };
@@ -471,6 +574,8 @@ static void on_display(void)
         glMaterialf(GL_FRONT, GL_SHININESS, shininess1);
         glutSolidCube(0.2);
     glPopMatrix();*/
+    
+    /*Kocke koje obelezavaju platforme na kojima ce se nalaziti igrac i protivnici*/
     int i,j;
     glPushMatrix();
         glTranslatef(0,0,-0.1);
@@ -480,14 +585,9 @@ static void on_display(void)
             for(j=0;j<10;j++)
             {
                
-                glMaterialfv(GL_FRONT, GL_AMBIENT, ambient_coeffsBlack);
-                glMaterialfv(GL_FRONT, GL_DIFFUSE, diffuse_coeffsBlack);
-                glMaterialfv(GL_FRONT, GL_SPECULAR, specular_coeffs);
+                floorMaterial(ambient_coeffsBlack,diffuse_coeffsBlack,specular_coeffs);
                 glutWireCube(0.2);
-                glMaterialfv(GL_FRONT, GL_AMBIENT, ambient_coeffsFloor);
-                glMaterialfv(GL_FRONT, GL_DIFFUSE, diffuse_coeffsFloor);
-                glMaterialfv(GL_FRONT, GL_SPECULAR, specular_coeffs);
-                glMaterialf(GL_FRONT, GL_SHININESS, shininess1);               
+                floorMaterial(ambient_coeffsFloor,diffuse_coeffsFloor,specular_coeffs);              
                 glutSolidCube(0.2);
                 glTranslatef(-0.2,0,0);
             }
@@ -502,14 +602,10 @@ static void on_display(void)
         {
             if(i!= 5 && i!= 6)
             {
-                glMaterialfv(GL_FRONT, GL_AMBIENT, ambient_coeffsBlack);
-                glMaterialfv(GL_FRONT, GL_DIFFUSE, diffuse_coeffsBlack);
-                glMaterialfv(GL_FRONT, GL_SPECULAR, specular_coeffs);
+
+                floorMaterial(ambient_coeffsBlack,diffuse_coeffsBlack,specular_coeffs);
                 glutWireCube(0.2);
-                glMaterialfv(GL_FRONT, GL_AMBIENT, ambient_coeffsFloor);
-                glMaterialfv(GL_FRONT, GL_DIFFUSE, diffuse_coeffsFloor);
-                glMaterialfv(GL_FRONT, GL_SPECULAR, specular_coeffs);
-                glMaterialf(GL_FRONT, GL_SHININESS, shininess1);               
+                floorMaterial(ambient_coeffsFloor,diffuse_coeffsFloor,specular_coeffs);              
                 glutSolidCube(0.2);
                 
             }
@@ -521,14 +617,10 @@ static void on_display(void)
         glTranslatef(0,-2,0.1);
         for(i =0;i<11;i++)
         {
-            glMaterialfv(GL_FRONT, GL_AMBIENT, ambient_coeffsBlack);
-            glMaterialfv(GL_FRONT, GL_DIFFUSE, diffuse_coeffsBlack);
-            glMaterialfv(GL_FRONT, GL_SPECULAR, specular_coeffs);
+
+            floorMaterial(ambient_coeffsBlack,diffuse_coeffsBlack,specular_coeffs);
             glutWireCube(0.2);
-            glMaterialfv(GL_FRONT, GL_AMBIENT, ambient_coeffsFloor);
-            glMaterialfv(GL_FRONT, GL_DIFFUSE, diffuse_coeffsFloor);
-            glMaterialfv(GL_FRONT, GL_SPECULAR, specular_coeffs);
-            glMaterialf(GL_FRONT, GL_SHININESS, shininess1);               
+            floorMaterial(ambient_coeffsFloor,diffuse_coeffsFloor,specular_coeffs);             
             glutSolidCube(0.2);
             glTranslatef(-0.2,0,0);
         }
@@ -539,33 +631,24 @@ static void on_display(void)
         for(i=0;i<4;i++)
         {
             glPushMatrix();
-            for(j=0;j<6;j++) 
+            for(j=0;j<10;j++) 
             {
-                    if(i != 0 && i!=3)
+                    if(i != 0 && i!=3) /*putic*/
                     {
-                        glMaterialfv(GL_FRONT, GL_AMBIENT, ambient_coeffsBlack);
-                        glMaterialfv(GL_FRONT, GL_DIFFUSE, diffuse_coeffsBlack);
-                        glMaterialfv(GL_FRONT, GL_SPECULAR, specular_coeffs);
+                        
+                        floorMaterial(ambient_coeffsBlack,diffuse_coeffsBlack,specular_coeffs);
                         glutWireCube(0.2);
-                        glMaterialfv(GL_FRONT, GL_AMBIENT, ambient_coeffsFloorBlue);
-                        glMaterialfv(GL_FRONT, GL_DIFFUSE, diffuse_coeffsFloorBlue);
-                        glMaterialfv(GL_FRONT, GL_SPECULAR, specular_coeffs);
-                        glMaterialf(GL_FRONT, GL_SHININESS, shininess1);               
+                        floorMaterial(ambient_coeffsFloorBlue,diffuse_coeffsFloorBlue,specular_coeffs);
                         glutSolidCube(0.2);
                     }
-                    else
+                    else if(j!=0) /*zid putica*/
                     {
                         glPushMatrix();
-                            glTranslatef(0,0,0.2);
-                            glMaterialfv(GL_FRONT, GL_AMBIENT, ambient_coeffsBlack);
-                            glMaterialfv(GL_FRONT, GL_DIFFUSE, diffuse_coeffsBlack);
-                            glMaterialfv(GL_FRONT, GL_SPECULAR, specular_coeffs);
-                            glutWireCube(0.2);
-                            glMaterialfv(GL_FRONT, GL_AMBIENT, ambient_coeffsFloorBlue);
-                            glMaterialfv(GL_FRONT, GL_DIFFUSE, diffuse_coeffsFloorBlue);
-                            glMaterialfv(GL_FRONT, GL_SPECULAR, specular_coeffs);
-                            glMaterialf(GL_FRONT, GL_SHININESS, shininess1);               
-                            glutSolidCube(0.2);
+                        glTranslatef(0,0,0.2);
+                        floorMaterial(ambient_coeffsBlack,diffuse_coeffsBlack,specular_coeffs);
+                        glutWireCube(0.2);
+                        floorMaterial(ambient_coeffsFloorBlue,diffuse_coeffsFloorBlue,specular_coeffs);              
+                        glutSolidCube(0.2);
                             
                         glPopMatrix();
                     }
@@ -577,19 +660,12 @@ static void on_display(void)
         }
     glPopMatrix();
     
-    
-    /*sfere*/
     glPushMatrix();
         glTranslatef(ball_x_movement,ball_y_movement,ball_z_position);
-        glMaterialfv(GL_FRONT, GL_AMBIENT, ambient_coeffsBlack);
-        glMaterialfv(GL_FRONT, GL_DIFFUSE, diffuse_coeffsBlack);
-        glMaterialfv(GL_FRONT, GL_SPECULAR, specular_coeffs);
-            glutWireSphere(0.1,10,10);
         glMaterialfv(GL_FRONT, GL_AMBIENT, ambient_coeffsBall);
         glMaterialfv(GL_FRONT, GL_DIFFUSE, diffuse_coeffsBall);
         glMaterialfv(GL_FRONT, GL_SPECULAR, specular_coeffs2);
-     /*   glMaterialf(GL_FRONT, GL_SHININESS,shininess1);*/
-            glutSolidSphere(0.1,10,10);
+        glutSolidSphere(0.1,10,10);
     glPopMatrix();
     
     glPushMatrix();
