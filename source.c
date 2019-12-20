@@ -189,7 +189,7 @@ void animate_movement(int player_direction){
     
     
     ball_z_position=0.1 + sin(5*animation_timer*pi)/10; /*poskok igraca*/
-    glutPostRedisplay();
+    /*glutPostRedisplay();*/
     
     glutTimerFunc(50,animate_movement,player_direction);
 }
@@ -279,7 +279,7 @@ void animate_hit(int player_direction){
     
     
     ball_z_position=0.1 + sin(5*animation_timer*pi)/10; /*poskok igraca*/
-    glutPostRedisplay();
+   /* glutPostRedisplay();*/
     
     glutTimerFunc(50,animate_hit,player_direction);
     
