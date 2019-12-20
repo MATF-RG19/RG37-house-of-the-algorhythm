@@ -2,6 +2,7 @@
 #include <GL/glut.h>
 #include <math.h>
 #include <stdio.h>
+#include <string.h>
 static void on_keyboard(unsigned char key, int x, int y);
 static void on_reshape(int width, int height);
 static void on_display(void);
@@ -14,11 +15,20 @@ static float ball_z_position = 0.1;
 static float animation_timer = 0; /* Varijabla koja se inkrementira do odredjene vrednosti radi animacije objekata*/
 static int ij1=0,ij2=0,ij3=0,ij4=0;
 static int ongoing_animation = 0; /* Ako se animacija odvija jos uvek ili ne*/
+static float pushButtonThreshold;
+
+static int windowWidth = 700;
+static int windowHeight = 700;
 enum player_direction{
  
     UP,DOWN,LEFT,RIGHT
     
 };
+static int stopAnimation = 0;
+static int scoreNum = 0;
+#define bpm 0.1/*beats per minute, tj brzina igranja koju zelimo da postignemo*/
+static float idleTimer = 0;
+
 
 static float phi , theta ;
 static float delta_phi , delta_theta ;
@@ -48,7 +58,7 @@ static int board[21][12]={
         
     };
 
-GLubyte rasters[4*24] = {
+GLubyte rasters[20*24] = {
     0b00011111, 0b11111000,
     0b00011111, 0b11111000,
     0b00011111, 0b11111000,
@@ -100,12 +110,68 @@ GLubyte rasters[4*24] = {
     0b00011111, 0b11111000,
     0b00011111, 0b11111000,
     0b00011111, 0b11111000,
+
+    0b00011111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11110000,
+    0b00011111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11110000,
+    0b00011111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11110000,
+    0b00011111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11110000,
+    0b00011111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11110000,
+    0b00011111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11110000,
+    0b00011111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11110000,
+    0b00011111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11110000,
+    0b00011111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11110000,
+    0b00011111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11110000,
+    0b00011111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11110000,
+    0b00011111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11110000, 
+                                                    
+    0b00011111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11110000,
+    0b00011111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11110000,
+    0b00011111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11110000,
+    0b00011111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11110000,
+    0b00011111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11110000,
+    0b00011111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11110000,
+    0b00011111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11110000,
+    0b00011111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11110000,
+    0b00011111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11110000,
+    0b00011111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11110000,
+    0b00011111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11110000,
+    0b00011111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11110000,
+                                         
+    0b00011111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11110000,
+    0b00011111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11110000,
+    0b00011111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11110000,
+    0b00011111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11110000,
+    0b00011111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11110000,
+    0b00011111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11110000,
+    0b00011111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11110000,
+    0b00011111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11110000,
+    0b00011111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11110000,
+    0b00011111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11110000,
+    0b00011111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11110000,
+    0b00011111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11110000,
+                                         
+    0b00011111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11110000,
+    0b00011111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11110000,
+    0b00011111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11110000,
+    0b00011111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11110000,
+    0b00011111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11110000,
+    0b00011111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11110000,
+    0b00011111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11110000,
+    0b00011111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11110000,
+    0b00011111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11110000,
+    0b00011111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11110000,
+    0b00011111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11110000,
+    0b00011111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11110000,
+    
 };
+
 
 #define Animation_speed 0.025   /*intervali koliko se povecava varijabla animation_timer*/
 #define Animation_threshold_movement 0.2 /* Ukupna kolicina "vremena" koliko ce se odvijati animacija za pomeranje*/
 #define Animation_threshold_hit 0.1 /*Ukupna kolicina "vremena" koliko ce se odvijati animacija za udarac o protivnika*/
+#define timerIncrementValue 1 /*za koliko se inkrementira timer u svakom pozivu funkcije*/
     
+
 void floorMaterial(GLfloat *ambient,GLfloat *diffuse,GLfloat *specular)
 {
 
@@ -127,9 +193,15 @@ void printMatrix()
 
 void dance(int var)
 {
-    timer +=0.1;
+    timer += timerIncrementValue;
+    idleTimer += timerIncrementValue;
+    if(idleTimer >= timerIncrementValue*(1/bpm)*3)
+        scoreNum = 0;
+    
     glutPostRedisplay();
-    glutTimerFunc(100,dance,0);
+    
+    if(stopAnimation == 0)
+        glutTimerFunc(100,dance,0);
 }
     
 void animate_movement(int player_direction){
@@ -302,7 +374,7 @@ int main(int argc,char** argv)
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_RGB | GLUT_DEPTH | GLUT_DOUBLE);
 
-    glutInitWindowSize(700, 700);
+    glutInitWindowSize(windowWidth, windowHeight);
     glutInitWindowPosition(500, 0);
     glutCreateWindow(argv[0]);
     glutKeyboardFunc(on_keyboard);
@@ -323,7 +395,8 @@ int main(int argc,char** argv)
     glLightfv(GL_LIGHT1, GL_AMBIENT, light_ambient);
     glLightfv(GL_LIGHT1, GL_DIFFUSE, light_diffuse);
   
-
+    pushButtonThreshold = timerIncrementValue*(1/bpm)-timerIncrementValue*3;
+    
     phi = pi/4;
     theta = pi / 4;
     delta_phi = delta_theta = pi / 90;
@@ -348,24 +421,29 @@ static void on_keyboard(unsigned char key, int x, int y)
         break;
 
     case 'w':
+        
         if(board[BallPosX][BallPosY+1] == 0 && ongoing_animation == 0)
         {
-            animation_timer = 0;
-            ongoing_animation = 1;
+            animation_timer = 0;        /*Kazemo da je pocetak animacije (unutar animate_movement funkcije raste*/
+            ongoing_animation = 1;      /*Ako udjemo u if ne zelimo da udjemo opet dok se ne zavrsi animacija*/
+            idleTimer = 0;              /*Resetujemo idleTimer na 0 kada se igrac pomeri*/
             glutTimerFunc(0,animate_movement,UP);
             
             board[BallPosX][BallPosY] = 0;
             BallPosY++;
             board[BallPosX][BallPosY] = 1;
             
-            printMatrix();
+           
+            if(fmod(timer,(1/bpm)) >= pushButtonThreshold )
+                scoreNum +=1;
+            else
+                scoreNum = 0;
         }
         else if(board[BallPosX][BallPosY+1] == 2 && ongoing_animation == 0)
         {
             animation_timer = 0;
             ongoing_animation = 1;
             glutTimerFunc(0,animate_hit,UP);
-            printMatrix();
             
         }
             
@@ -375,11 +453,18 @@ static void on_keyboard(unsigned char key, int x, int y)
         {
             animation_timer = 0;
             ongoing_animation = 1;
+            idleTimer = 0;
             glutTimerFunc(0,animate_movement,DOWN);
                 
             board[BallPosX][BallPosY] = 0;
             BallPosY--;
             board[BallPosX][BallPosY] = 1;
+            
+            if(fmod(timer,(1/bpm)) >= pushButtonThreshold )
+                scoreNum +=1;
+            else
+                scoreNum = 0;
+            
             
         }
         else if(board[BallPosX][BallPosY-1] == 2 && ongoing_animation == 0)
@@ -387,7 +472,6 @@ static void on_keyboard(unsigned char key, int x, int y)
             animation_timer = 0;
             ongoing_animation = 1;
             glutTimerFunc(0,animate_hit,DOWN);
-            printMatrix();
             
         }
         break;
@@ -396,6 +480,7 @@ static void on_keyboard(unsigned char key, int x, int y)
         {
             animation_timer = 0;
             ongoing_animation = 1;
+            idleTimer = 0;
             glutTimerFunc(0,animate_movement,LEFT);
  
             
@@ -403,11 +488,17 @@ static void on_keyboard(unsigned char key, int x, int y)
             BallPosX--;
             board[BallPosX][BallPosY] = 1;
             
+            if(fmod(timer,(1/bpm)) >= pushButtonThreshold )
+                scoreNum +=1;
+            else
+                scoreNum = 0;
+            
         }
         else if(board[BallPosX-1][BallPosY] == 2 && ongoing_animation == 0)
         {
             animation_timer = 0;
             ongoing_animation = 1;
+            idleTimer = 0;
             glutTimerFunc(0,animate_hit,LEFT);
             printMatrix();
             
@@ -417,13 +508,19 @@ static void on_keyboard(unsigned char key, int x, int y)
         if(board[BallPosX+1][BallPosY] == 0 && ongoing_animation == 0)
         {
             
-            animation_timer = 0;
-            ongoing_animation = 1;
+            animation_timer = 0;        
+            ongoing_animation = 1;      
+            idleTimer = 0;              
             glutTimerFunc(0,animate_movement,RIGHT);
  
             board[BallPosX][BallPosY] = 0;
             BallPosX++;
             board[BallPosX][BallPosY] = 1;
+            
+            if(fmod(timer,(1/bpm)) >= pushButtonThreshold )
+                scoreNum +=1;
+            else
+                scoreNum = 0;
             
         }
         else if(board[BallPosX+1][BallPosY] == 2 && ongoing_animation == 0)
@@ -468,7 +565,12 @@ static void on_keyboard(unsigned char key, int x, int y)
         glutPostRedisplay();
         break;
     case 'g':
+        stopAnimation = 0;
         glutTimerFunc(100,dance,0);
+        break;
+        
+    case 'h':
+        stopAnimation = 1;
         break;
         
     }
@@ -480,15 +582,18 @@ static void on_reshape(int width, int height)
     
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
+    glOrtho(0, width, 0, height, 0, 1.0);
+    
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
     gluPerspective(90, (float) width / height, 1, 40);
     
-    printf("?");
     
 }
 
+
 static void on_display(void)
-{
-    
+{   
     GLfloat light_position_spotlight[] = {ball_x_movement,ball_y_movement,1.5,1};
     GLfloat light_position[] = {0,0,0,0};
     
@@ -496,19 +601,32 @@ static void on_display(void)
     
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    glOrtho(0, 700, 0, 450, 0, 1.0);
+    glOrtho(0, windowWidth, 0, windowHeight, 0, 1.0);
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
     glDisable(GL_LIGHTING);
 
+    glColor3f(0,0,0);
+    glRasterPos2i(windowWidth/2-8*3, 20);
     
+    char score[25] = {'S','c','o','r','e',' ','m','u','l','t','i','p','l','i','e','r',' ','\0'};
+    sprintf(score+strlen(score),"%d",scoreNum);
+    int z;
+    /*for(z=0;z<2;z++)
+    glBitmap(8*2,12,0.0, 0.0,16.0, 0.0,numbers+z*24);*/
+    int scoreLen = strlen(score);
+    for(z=0;z<scoreLen;z++)
+    glutBitmapCharacter(GLUT_BITMAP_9_BY_15,score[z]);
+
+    glRasterPos2i(windowWidth/2-8*3, 40);
+    glBitmap(8*8,12*4,0.0, 0.0,1.0, 0.0,rasters+24*4);
     
     /*Bitmapa pokretnih linija*/
     glColor3f(0.0, 0.5, 0.8);
-    int i1 = (int)(437.5-timer*70) + ij1*350;
-    int i2 = (int)(525-timer*70) + ij2*350;
-    int i3 = (int)(612.5-timer*70) + ij3*350;
-    int i4 = (int)(700-timer*70) + ij4*350;
+    int i1 = (int)(437.5-timer*87.5*bpm) + ij1*350;
+    int i2 = (int)(525-timer*87.5*bpm) + ij2*350;
+    int i3 = (int)(612.5-timer*87.5*bpm) + ij3*350; 
+    int i4 = (int)(700-timer*87.5*bpm) + ij4*350;
     if(i1 <= 350)
     {
         ij1++;
@@ -538,16 +656,16 @@ static void on_display(void)
     glRasterPos2i( i4 , 40);
     glBitmap(16,48,0.0, 0.0,0.0, 0.0,rasters);
     
-    glRasterPos2i((int)(0+timer*70) % 350, 40);
+    glRasterPos2i((int)(0+timer*87.5*bpm) % 350, 40);
     glBitmap(16,48,0.0, 0.0,0.0, 0.0,rasters);
 
-    glRasterPos2i((int)(87.5+timer*70) % (350), 40);
+    glRasterPos2i((int)(87.5+timer*87.5*bpm) % 350, 40);
     glBitmap(16,48,0.0, 0.0,0.0, 0.0,rasters);
     
-    glRasterPos2i((int)(175+timer*70) % 350, 40);
+    glRasterPos2i((int)(175+timer*87.5*bpm) % 350, 40);
     glBitmap(16,48,0.0, 0.0,0.0, 0.0,rasters);
     
-    glRasterPos2i((int)(262.5+timer*70) % 350, 40);
+    glRasterPos2i((int)(262.5+timer*87.5*bpm) % 350, 40);
     glBitmap(16,48,0.0, 0.0,0.0, 0.0,rasters);
     
 
