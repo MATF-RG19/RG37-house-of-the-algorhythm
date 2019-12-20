@@ -12,6 +12,7 @@ static float ball_x_movement=-1;
 static float ball_y_movement=-1;
 static float ball_z_position = 0.1;
 static float animation_timer = 0; /* Varijabla koja se inkrementira do odredjene vrednosti radi animacije objekata*/
+static int ij1=0,ij2=0,ij3=0,ij4=0;
 static int ongoing_animation = 0; /* Ako se animacija odvija jos uvek ili ne*/
 enum player_direction{
  
@@ -126,9 +127,9 @@ void printMatrix()
 
 void dance(int var)
 {
-    timer +=0.0004;
+    timer +=0.1;
     glutPostRedisplay();
-    glutTimerFunc(0,dance,0);
+    glutTimerFunc(100,dance,0);
 }
     
 void animate_movement(int player_direction){
@@ -467,7 +468,7 @@ static void on_keyboard(unsigned char key, int x, int y)
         glutPostRedisplay();
         break;
     case 'g':
-        glutTimerFunc(0,dance,0);
+        glutTimerFunc(100,dance,0);
         break;
         
     }
@@ -495,23 +496,61 @@ static void on_display(void)
     
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    glOrtho(0, 450, 0, 450, 0, 1.0);
+    glOrtho(0, 700, 0, 450, 0, 1.0);
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
     glDisable(GL_LIGHTING);
 
-    glRasterPos2i(20+(int)timer%100, 20);
+    
     
     /*Bitmapa pokretnih linija*/
     glColor3f(0.0, 0.5, 0.8);
-    int z;
-    for(z=0;z<3;z++)
+    int i1 = (int)(437.5-timer*70) + ij1*350;
+    int i2 = (int)(525-timer*70) + ij2*350;
+    int i3 = (int)(612.5-timer*70) + ij3*350;
+    int i4 = (int)(700-timer*70) + ij4*350;
+    if(i1 <= 350)
     {
-        
-        glBitmap(16,48,0.0, 0.0,70.0, 0.0,rasters);
+        ij1++;
     }
- 
-    printf("%f\n",timer);
+    else if(i2 <= 350)
+    {
+        ij2++;
+    } 
+    else if(i3 <= 350)
+    {
+        ij3++;
+    }
+    else if(i4 <= 350)
+    {
+        ij4++;
+    }
+            
+    glRasterPos2i( i1, 40);
+    glBitmap(16,48,0.0, 0.0,0.0, 0.0,rasters);
+
+    glRasterPos2i( i2 , 40);
+    glBitmap(16,48,0.0, 0.0,0.0, 0.0,rasters);
+    
+    glRasterPos2i( i3, 40);
+    glBitmap(16,48,0.0, 0.0,0.0, 0.0,rasters);
+    
+    glRasterPos2i( i4 , 40);
+    glBitmap(16,48,0.0, 0.0,0.0, 0.0,rasters);
+    
+    glRasterPos2i((int)(0+timer*70) % 350, 40);
+    glBitmap(16,48,0.0, 0.0,0.0, 0.0,rasters);
+
+    glRasterPos2i((int)(87.5+timer*70) % (350), 40);
+    glBitmap(16,48,0.0, 0.0,0.0, 0.0,rasters);
+    
+    glRasterPos2i((int)(175+timer*70) % 350, 40);
+    glBitmap(16,48,0.0, 0.0,0.0, 0.0,rasters);
+    
+    glRasterPos2i((int)(262.5+timer*70) % 350, 40);
+    glBitmap(16,48,0.0, 0.0,0.0, 0.0,rasters);
+    
+
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     gluPerspective(90, 1, 1, 40);
