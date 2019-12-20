@@ -3,16 +3,17 @@
 #include <math.h>
 #include <stdio.h>
 #include <string.h>
+#include <time.h>
 static void on_keyboard(unsigned char key, int x, int y);
 static void on_reshape(int width, int height);
 static void on_display(void);
 
-static float timer = 0;
+static float timer = 0;   /*varijabla koja oznacava broj crtanja ekrana i sluzi za iscrtavanje plavih linija*/
 const static float pi = 3.141592653589793;
 static float ball_x_movement=-1;
 static float ball_y_movement=-1;
 static float ball_z_position = 0.1;
-static float animation_timer = 0; /* Varijabla koja se inkrementira do odredjene vrednosti radi animacije objekata*/
+static float animation_timer = 0; /* Varijabla koja se inkrementira radi animacije objekata*/
 static int ij1=0,ij2=0,ij3=0,ij4=0;
 static int ongoing_animation = 0; /* Ako se animacija odvija jos uvek ili ne*/
 static float pushButtonThreshold;
@@ -26,7 +27,7 @@ enum player_direction{
 };
 static int stopAnimation = 0;
 static int scoreNum = 0;
-#define bpm 0.05/*beats per minute, tj brzina igranja koju zelimo da postignemo*/
+#define bpm 0.07/*beats per minute, tj brzina igranja koju zelimo da postignemo*/
 static float idleTimer = 0;
 
 
@@ -36,8 +37,8 @@ static int BallPosX ,BallPosY;
 static int board[21][12]={
         {-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 , -1},
         {-1 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , -1},
-        {-1 , 2 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , -1},
         {-1 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , -1},
+        {-1 , 0 , 2 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , -1},
         {-1 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , -1},
         {-1 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , -1},
         {-1 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , -1},
@@ -165,6 +166,13 @@ GLubyte rasters[20*24] = {
     
 };
 
+typedef struct enemy{
+    int health;
+    int posX;
+    int posY;
+}Enemy;
+
+Enemy blobs[3];
 
 #define Animation_speed 0.025   /*intervali koliko se povecava varijabla animation_timer*/
 #define Animation_threshold_movement 0.2 /* Ukupna kolicina "vremena" koliko ce se odvijati animacija za pomeranje*/
@@ -172,7 +180,7 @@ GLubyte rasters[20*24] = {
 #define timerIncrementValue 1 /*za koliko se inkrementira timer u svakom pozivu funkcije*/
     
 
-void floorMaterial(GLfloat *ambient,GLfloat *diffuse,GLfloat *specular)
+void changeMaterial(GLfloat *ambient,GLfloat *diffuse,GLfloat *specular)
 {
 
         glMaterialfv(GL_FRONT, GL_AMBIENT, ambient);
@@ -202,6 +210,21 @@ void dance(int var)
     
     if(stopAnimation == 0)
         glutTimerFunc(50,dance,0);
+}
+    
+void reduceHealthOfEnemy(int enemyPosX,int enemyPosY)
+{
+    int i;
+    for(i=0;i<3;i++)
+    {
+        if(blobs[i].posX == enemyPosX && blobs[i].posY == enemyPosY)
+        {
+            blobs[i].health--;
+            if(blobs[i].health == 0)
+                board[enemyPosX][enemyPosY] = 0;
+        }
+    }
+
 }
     
 void animate_movement(int player_direction){
@@ -381,7 +404,8 @@ int main(int argc,char** argv)
     glutReshapeFunc(on_reshape);
     glutDisplayFunc(on_display);
     
-    
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glEnable(GL_LIGHTING);
 
     glEnable(GL_LIGHT0);
@@ -400,6 +424,24 @@ int main(int argc,char** argv)
     phi = pi/4;
     theta = pi / 4;
     delta_phi = delta_theta = pi / 90;
+    
+    /*deklaracija Neprijatelja*/
+    srand(time(NULL));
+    printf("%d",rand()%21);
+    int i;
+    for(i = 0;i<3;i++)
+    {
+        blobs[i].posX = rand()%21;
+        blobs[i].posY = rand()%12;
+        blobs[i].health = 2;
+        
+        if(board[blobs[i].posX][blobs[i].posY] == 0)
+            board[blobs[i].posX][blobs[i].posY] = 2;
+        else
+            i--;
+    }
+
+ 
     
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
     
@@ -443,8 +485,10 @@ static void on_keyboard(unsigned char key, int x, int y)
         {
             animation_timer = 0;
             ongoing_animation = 1;
-            glutTimerFunc(0,animate_hit,UP);
+            idleTimer = 0; 
+            reduceHealthOfEnemy(BallPosX,BallPosY+1);
             
+            glutTimerFunc(0,animate_hit,UP);
         }
             
         break;
@@ -465,12 +509,13 @@ static void on_keyboard(unsigned char key, int x, int y)
             else
                 scoreNum = 0;
             
-            
         }
         else if(board[BallPosX][BallPosY-1] == 2 && ongoing_animation == 0)
         {
             animation_timer = 0;
+            idleTimer = 0; 
             ongoing_animation = 1;
+            reduceHealthOfEnemy(BallPosX,BallPosY-1);
             glutTimerFunc(0,animate_hit,DOWN);
             
         }
@@ -499,8 +544,8 @@ static void on_keyboard(unsigned char key, int x, int y)
             animation_timer = 0;
             ongoing_animation = 1;
             idleTimer = 0;
+            reduceHealthOfEnemy(BallPosX-1,BallPosY);
             glutTimerFunc(0,animate_hit,LEFT);
-            printMatrix();
             
         }
         break;
@@ -527,8 +572,9 @@ static void on_keyboard(unsigned char key, int x, int y)
         {
             animation_timer = 0;
             ongoing_animation = 1;
+            idleTimer = 0; 
+            reduceHealthOfEnemy(BallPosX+1,BallPosY);
             glutTimerFunc(0,animate_hit,RIGHT);
-            printMatrix();
             
         }
         break;
@@ -594,7 +640,7 @@ static void on_reshape(int width, int height)
 
 static void on_display(void)
 {   
-    printf("%f %f\n",timer,fmod(timer,1/bpm));
+   /* printf("%f %f\n",timer,fmod(timer,1/bpm));*/
     
     
     GLfloat light_position_spotlight[] = {ball_x_movement,ball_y_movement,1.5,1};
@@ -609,27 +655,27 @@ static void on_display(void)
     glLoadIdentity();
     glDisable(GL_LIGHTING);
 
-    glColor3f(0,0,0);
+    glColor3f(1,1,1);
     glRasterPos2i(windowWidth/2-8*3, 20);
     
     char score[25] = {'S','c','o','r','e',' ','m','u','l','t','i','p','l','i','e','r',' ','\0'};
     sprintf(score+strlen(score),"%d",scoreNum);
     int z;
-    /*for(z=0;z<2;z++)
-    glBitmap(8*2,12,0.0, 0.0,16.0, 0.0,numbers+z*24);*/
     int scoreLen = strlen(score);
     for(z=0;z<scoreLen;z++)
     glutBitmapCharacter(GLUT_BITMAP_9_BY_15,score[z]);
 
+    glColor3f(0,0,0);
     glRasterPos2i(windowWidth/2-8*3, 40);
     glBitmap(8*8,12*4,0.0, 0.0,1.0, 0.0,rasters+24*4);
+    float movementPerSecond = timer*87.5*bpm;
     
     /*Bitmapa pokretnih linija*/
     glColor3f(0.0, 0.5, 0.8);
-    int i1 = (int)(437.5-timer*87.5*bpm) + ij1*350;
-    int i2 = (int)(525-timer*87.5*bpm) + ij2*350;
-    int i3 = (int)(612.5-timer*87.5*bpm) + ij3*350; 
-    int i4 = (int)(700-timer*87.5*bpm) + ij4*350;
+    int i1 = (int)(437.5-movementPerSecond) + ij1*350;
+    int i2 = (int)(525-movementPerSecond) + ij2*350;
+    int i3 = (int)(612.5-movementPerSecond) + ij3*350; 
+    int i4 = (int)(700-movementPerSecond) + ij4*350;
     if(i1 <= 350)
     {
         ij1++;
@@ -659,16 +705,16 @@ static void on_display(void)
     glRasterPos2i( i4 , 40);
     glBitmap(16,48,0.0, 0.0,0.0, 0.0,rasters);
     
-    glRasterPos2i((int)(0+timer*87.5*bpm) % 350, 40);
+    glRasterPos2i((int)(0+movementPerSecond) % 350, 40);
     glBitmap(16,48,0.0, 0.0,0.0, 0.0,rasters);
 
-    glRasterPos2i((int)(87.5+timer*87.5*bpm) % 350, 40);
+    glRasterPos2i((int)(87.5+movementPerSecond) % 350, 40);
     glBitmap(16,48,0.0, 0.0,0.0, 0.0,rasters);
     
-    glRasterPos2i((int)(175+timer*87.5*bpm) % 350, 40);
+    glRasterPos2i((int)(175+movementPerSecond) % 350, 40);
     glBitmap(16,48,0.0, 0.0,0.0, 0.0,rasters);
     
-    glRasterPos2i((int)(262.5+timer*87.5*bpm) % 350, 40);
+    glRasterPos2i((int)(262.5+movementPerSecond) % 350, 40);
     glBitmap(16,48,0.0, 0.0,0.0, 0.0,rasters);
     
 
@@ -707,6 +753,8 @@ static void on_display(void)
     
     
     /*rename Colors*/
+    GLfloat ambient_coeffsEnemyBlobGreen[] = {0.1, 0.7, 0.4 ,0.4};
+    GLfloat diffuse_coeffsEnemyBlobGreen[] = {0.1, 0.7, 0.4 ,0.4};
     
     GLfloat ambient_coeffsBall[] = {0.1, 0.1, 0.4 ,1};
     GLfloat diffuse_coeffsBall[] = {0.1, 0.1, 0.4 ,1};
@@ -745,9 +793,9 @@ static void on_display(void)
             for(j=0;j<10;j++)
             {
                
-                floorMaterial(ambient_coeffsBlack,diffuse_coeffsBlack,specular_coeffs);
+                changeMaterial(ambient_coeffsBlack,diffuse_coeffsBlack,specular_coeffs);
                 glutWireCube(0.2);
-                floorMaterial(ambient_coeffsFloor,diffuse_coeffsFloor,specular_coeffs);              
+                changeMaterial(ambient_coeffsFloor,diffuse_coeffsFloor,specular_coeffs);              
                 glutSolidCube(0.2);
                 glTranslatef(-0.2,0,0);
             }
@@ -763,9 +811,9 @@ static void on_display(void)
             if(i!= 5 && i!= 6)
             {
 
-                floorMaterial(ambient_coeffsBlack,diffuse_coeffsBlack,specular_coeffs);
+                changeMaterial(ambient_coeffsBlack,diffuse_coeffsBlack,specular_coeffs);
                 glutWireCube(0.2);
-                floorMaterial(ambient_coeffsFloor,diffuse_coeffsFloor,specular_coeffs);              
+                changeMaterial(ambient_coeffsFloor,diffuse_coeffsFloor,specular_coeffs);              
                 glutSolidCube(0.2);
                 
             }
@@ -778,9 +826,9 @@ static void on_display(void)
         for(i =0;i<11;i++)
         {
 
-            floorMaterial(ambient_coeffsBlack,diffuse_coeffsBlack,specular_coeffs);
+            changeMaterial(ambient_coeffsBlack,diffuse_coeffsBlack,specular_coeffs);
             glutWireCube(0.2);
-            floorMaterial(ambient_coeffsFloor,diffuse_coeffsFloor,specular_coeffs);             
+            changeMaterial(ambient_coeffsFloor,diffuse_coeffsFloor,specular_coeffs);             
             glutSolidCube(0.2);
             glTranslatef(-0.2,0,0);
         }
@@ -796,18 +844,18 @@ static void on_display(void)
                     if(i != 0 && i!=3) /*putic*/
                     {
                         
-                        floorMaterial(ambient_coeffsBlack,diffuse_coeffsBlack,specular_coeffs);
+                        changeMaterial(ambient_coeffsBlack,diffuse_coeffsBlack,specular_coeffs);
                         glutWireCube(0.2);
-                        floorMaterial(ambient_coeffsFloorBlue,diffuse_coeffsFloorBlue,specular_coeffs);
+                        changeMaterial(ambient_coeffsFloorBlue,diffuse_coeffsFloorBlue,specular_coeffs);
                         glutSolidCube(0.2);
                     }
                     else if(j!=0) /*zid putica*/
                     {
                         glPushMatrix();
                         glTranslatef(0,0,0.2);
-                        floorMaterial(ambient_coeffsBlack,diffuse_coeffsBlack,specular_coeffs);
+                        changeMaterial(ambient_coeffsBlack,diffuse_coeffsBlack,specular_coeffs);
                         glutWireCube(0.2);
-                        floorMaterial(ambient_coeffsFloorBlue,diffuse_coeffsFloorBlue,specular_coeffs);              
+                        changeMaterial(ambient_coeffsFloorBlue,diffuse_coeffsFloorBlue,specular_coeffs);              
                         glutSolidCube(0.2);
                             
                         glPopMatrix();
@@ -828,6 +876,22 @@ static void on_display(void)
         glutSolidSphere(0.1,10,10);
     glPopMatrix();
     
+    
+    /*Neprijatelji*/
+
+
+    int nE;
+    for(nE=0;nE<3;nE++)
+    {
+        glPushMatrix();
+        if(blobs[nE].health != 0)
+        {
+            glTranslatef(-0.2*(blobs[nE].posX -1),-0.2*(blobs[nE].posY - 1),0.1);
+            changeMaterial(ambient_coeffsEnemyBlobGreen,diffuse_coeffsEnemyBlobGreen,specular_coeffs);
+            glutSolidCube(0.15);
+        }
+        glPopMatrix();
+    }
     glPushMatrix();
         glBegin(GL_LINES);
         glVertex3f(0,0,0);
