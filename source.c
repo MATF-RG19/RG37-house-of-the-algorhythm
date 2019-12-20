@@ -26,7 +26,7 @@ enum player_direction{
 };
 static int stopAnimation = 0;
 static int scoreNum = 0;
-#define bpm 0.1/*beats per minute, tj brzina igranja koju zelimo da postignemo*/
+#define bpm 0.05/*beats per minute, tj brzina igranja koju zelimo da postignemo*/
 static float idleTimer = 0;
 
 
@@ -201,7 +201,7 @@ void dance(int var)
     glutPostRedisplay();
     
     if(stopAnimation == 0)
-        glutTimerFunc(100,dance,0);
+        glutTimerFunc(50,dance,0);
 }
     
 void animate_movement(int player_direction){
@@ -395,7 +395,7 @@ int main(int argc,char** argv)
     glLightfv(GL_LIGHT1, GL_AMBIENT, light_ambient);
     glLightfv(GL_LIGHT1, GL_DIFFUSE, light_diffuse);
   
-    pushButtonThreshold = timerIncrementValue*(1/bpm)-timerIncrementValue*3;
+    pushButtonThreshold = timerIncrementValue*(1/bpm)-timerIncrementValue*(1/bpm)/3;
     
     phi = pi/4;
     theta = pi / 4;
@@ -594,6 +594,9 @@ static void on_reshape(int width, int height)
 
 static void on_display(void)
 {   
+    printf("%f %f\n",timer,fmod(timer,1/bpm));
+    
+    
     GLfloat light_position_spotlight[] = {ball_x_movement,ball_y_movement,1.5,1};
     GLfloat light_position[] = {0,0,0,0};
     
