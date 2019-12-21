@@ -6,7 +6,7 @@ Igrica je u isometric view napravljena. Ovo zahteva od igraca da se navikne na k
 
 |  Taster|Komanda  |
 |--------|---------|
-| <kbd>w</kbd> <kbd>W</kbd> |Kretanje ka gore levo|
-| <kbd>s</kbd> <kbd>S</kbd> |Kretanje ka dole levo|
-| <kbd>a</kbd> <kbd>A</kbd> |Kretanje ka dole desno|
-| <kbd>d</kbd> <kbd>D</kbd> |Kretanje ka gore desno|
+| <kbd>w</kbd>  |Kretanje ka gore levo|
+| <kbd>s</kbd>  |Kretanje ka dole levo|
+| <kbd>a</kbd>  |Kretanje ka dole desno|
+| <kbd>d</kbd>  |Kretanje ka gore desno|
