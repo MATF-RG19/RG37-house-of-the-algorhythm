@@ -30,33 +30,34 @@ static int scoreNum = 0;
 #define bpm 0.07/*beats per minute, tj brzina igranja koju zelimo da postignemo*/
 static float idleTimer = 0;
 
-
+static float enemyZPosition; /* Varijabla koja se koristi da bi animirali poskok neprijatelja*/
 static float phi , theta ;
 static float delta_phi , delta_theta ;
 static int BallPosX ,BallPosY;
-static int board[21][12]={
-        {-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 , -1},
-        {-1 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , -1},
-        {-1 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , -1},
-        {-1 , 0 , 2 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , -1},
-        {-1 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , -1},
-        {-1 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , -1},
-        {-1 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , -1},
-        {-1 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , -1},
-        {-1 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , -1},
-        {-1 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , -1},
-        {-1 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , -1},
-        {-1 ,-1 ,-1 ,-1 ,-1 ,-1 , 0 , 0 ,-1 ,-1 ,-1 , -1},
-        {-1 ,-1 ,-1 ,-1 ,-1 ,-1 , 0 , 0 ,-1 ,-1 ,-1 , -1},
-        {-1 ,-1 ,-1 ,-1 ,-1 ,-1 , 0 , 0 ,-1 ,-1 ,-1 , -1},
-        {-1 ,-1 ,-1 ,-1 ,-1 ,-1 , 0 , 0 ,-1 ,-1 ,-1 , -1},
-        {-1 ,-1 ,-1 ,-1 ,-1 ,-1 , 0 , 0 ,-1 ,-1 ,-1 , -1},
-        {-1 ,-1 ,-1 ,-1 ,-1 ,-1 , 0 , 0 ,-1 ,-1 ,-1 , -1},
-        {-1 ,-1 ,-1 ,-1 ,-1 ,-1 , 0 , 0 ,-1 ,-1 ,-1 , -1},
-        {-1 ,-1 ,-1 ,-1 ,-1 ,-1 , 0 , 0 ,-1 ,-1 ,-1 , -1},
-        {-1 ,-1 ,-1 ,-1 ,-1 ,-1 , 0 , 0 ,-1 ,-1 ,-1 , -1},
-        {-1 ,-1 ,-1 ,-1 ,-1 ,-1 , 0 , 0 ,-1 ,-1 ,-1 , -1}
-        
+static int board[22][22]={
+        {-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 , -1},
+        {-1 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , -1},
+        {-1 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , -1},
+        {-1 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , -1},
+        {-1 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , -1},
+        {-1 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , -1},
+        {-1 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , -1},
+        {-1 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , -1},
+        {-1 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , -1},
+        {-1 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , -1},
+        {-1 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , -1},
+        {-1 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , -1},
+        {-1 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , -1},
+        {-1 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , -1},
+        {-1 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , -1},
+        {-1 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , -1},
+        {-1 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , -1},
+        {-1 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , -1},
+        {-1 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , -1},
+        {-1 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , -1},
+        {-1 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , -1},
+        {-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 , -1},
+                                                                                              
     };
 
 GLubyte rasters[20*24] = {
@@ -170,9 +171,12 @@ typedef struct enemy{
     int health;
     int posX;
     int posY;
+    float posZ;
+    int readyToJump;
 }Enemy;
+#define NumberOfEnemies 10
 
-Enemy blobs[3];
+Enemy blobs[NumberOfEnemies];
 
 #define Animation_speed 0.025   /*intervali koliko se povecava varijabla animation_timer*/
 #define Animation_threshold_movement 0.2 /* Ukupna kolicina "vremena" koliko ce se odvijati animacija za pomeranje*/
@@ -191,9 +195,9 @@ void changeMaterial(GLfloat *ambient,GLfloat *diffuse,GLfloat *specular)
 void printMatrix()
 {
     int i,j;
-    for(i = 0;i<12;i++)
+    for(i = 0;i<22;i++)
     {
-        for(j=0;j<12;j++)
+        for(j=0;j<22;j++)
             printf("%d ",board[i][j]);
         printf("\n");
     }
@@ -211,11 +215,63 @@ void dance(int var)
     if(stopAnimation == 0)
         glutTimerFunc(50,dance,0);
 }
+
+int canMoveToSpot(int posX,int posY)
+{
+    if(board[posX][posY] == 0)
+        return 1;
+    else
+        return 0;
+}
+
+void jumpInPlaceAnimation(int blobNumber)
+{
+    blobs[blobNumber].posZ = 0.15 - cos((fmod(timer,1/bpm))*bpm*4*pi)/10;
+    
+    if(fmod(timer,1/bpm) <= ((1/bpm)-1))
+    glutTimerFunc(50,jumpInPlaceAnimation,blobNumber);
+}
+
+void enemyMove(Enemy *blobs,const int blobNumber,const int direction)
+{
+    int randomDirection = rand() % 3 - 1;
+
+    if(randomDirection != 0)
+    {
+        board[blobs[blobNumber].posX][blobs[blobNumber].posY] = 0;
+        
+        if(direction == 1)  /*gore dole*/
+        {
+            if(canMoveToSpot(blobs[blobNumber].posX+randomDirection,blobs[blobNumber].posY))
+            {
+                
+                blobs[blobNumber].posX+=randomDirection;
+                
+            }
+        }
+        else if(direction == 0) /* levo desno*/
+        {
+            if(canMoveToSpot(blobs[blobNumber].posX,blobs[blobNumber].posY+randomDirection))
+            {
+                blobs[blobNumber].posY+=randomDirection;
+            }
+            
+        }
+        board[blobs[blobNumber].posX][blobs[blobNumber].posY] = 2;
+    }
+    else
+    {
+        
+        glutTimerFunc(50,jumpInPlaceAnimation,blobNumber);
+    
+    }
+
+}
     
 void reduceHealthOfEnemy(int enemyPosX,int enemyPosY)
 {
     int i;
-    for(i=0;i<3;i++)
+    for(i=0;i<NumberOfEnemies;i++)
     {
         if(blobs[i].posX == enemyPosX && blobs[i].posY == enemyPosY)
         {
@@ -284,7 +340,6 @@ void animate_movement(int player_direction){
     
     
     ball_z_position=0.1 + sin(5*animation_timer*pi)/10; /*poskok igraca*/
-    /*glutPostRedisplay();*/
     
     glutTimerFunc(50,animate_movement,player_direction);
 }
@@ -374,7 +429,6 @@ void animate_hit(int player_direction){
     
     
     ball_z_position=0.1 + sin(5*animation_timer*pi)/10; /*poskok igraca*/
-   /* glutPostRedisplay();*/
     
     glutTimerFunc(50,animate_hit,player_direction);
     
@@ -427,12 +481,12 @@ int main(int argc,char** argv)
     
     /*deklaracija Neprijatelja*/
     srand(time(NULL));
-    printf("%d",rand()%21);
     int i;
-    for(i = 0;i<3;i++)
+    for(i = 0;i<NumberOfEnemies;i++)
     {
-        blobs[i].posX = rand()%21;
-        blobs[i].posY = rand()%12;
+        blobs[i].posX = rand()%20;
+        blobs[i].posY = rand()%20;
+        blobs[i].posZ = 0.1;
         blobs[i].health = 2;
         
         if(board[blobs[i].posX][blobs[i].posY] == 0)
@@ -463,120 +517,116 @@ static void on_keyboard(unsigned char key, int x, int y)
         break;
 
     case 'w':
-        
+        idleTimer = 0;              /*Resetujemo idleTimer na 0 kada se igrac pomeri*/
+        if(fmod(timer,(1/bpm)) >= pushButtonThreshold )
+            scoreNum +=1;
+        else
+            scoreNum = 0;
+            
         if(board[BallPosX][BallPosY+1] == 0 && ongoing_animation == 0)
         {
             animation_timer = 0;        /*Kazemo da je pocetak animacije (unutar animate_movement funkcije raste*/
             ongoing_animation = 1;      /*Ako udjemo u if ne zelimo da udjemo opet dok se ne zavrsi animacija*/
-            idleTimer = 0;              /*Resetujemo idleTimer na 0 kada se igrac pomeri*/
             glutTimerFunc(0,animate_movement,UP);
             
             board[BallPosX][BallPosY] = 0;
             BallPosY++;
-            board[BallPosX][BallPosY] = 1;
-            
-           
-            if(fmod(timer,(1/bpm)) >= pushButtonThreshold )
-                scoreNum +=1;
-            else
-                scoreNum = 0;
+            board[BallPosX][BallPosY] = 1;           
         }
         else if(board[BallPosX][BallPosY+1] == 2 && ongoing_animation == 0)
         {
             animation_timer = 0;
             ongoing_animation = 1;
-            idleTimer = 0; 
             reduceHealthOfEnemy(BallPosX,BallPosY+1);
             
             glutTimerFunc(0,animate_hit,UP);
         }
-            
+           printMatrix(); 
         break;
     case 's':
+        
+        idleTimer = 0;
+        if(fmod(timer,(1/bpm)) >= pushButtonThreshold )
+            scoreNum +=1;
+        else
+            scoreNum = 0;
+        
         if(board[BallPosX][BallPosY-1] == 0 && ongoing_animation == 0)
         {
             animation_timer = 0;
             ongoing_animation = 1;
-            idleTimer = 0;
+            
             glutTimerFunc(0,animate_movement,DOWN);
                 
             board[BallPosX][BallPosY] = 0;
             BallPosY--;
-            board[BallPosX][BallPosY] = 1;
-            
-            if(fmod(timer,(1/bpm)) >= pushButtonThreshold )
-                scoreNum +=1;
-            else
-                scoreNum = 0;
-            
+            board[BallPosX][BallPosY] = 1;        
         }
         else if(board[BallPosX][BallPosY-1] == 2 && ongoing_animation == 0)
         {
             animation_timer = 0;
-            idleTimer = 0; 
             ongoing_animation = 1;
             reduceHealthOfEnemy(BallPosX,BallPosY-1);
             glutTimerFunc(0,animate_hit,DOWN);
             
         }
+        printMatrix();
         break;
     case 'a':
+        
+        idleTimer = 0;
+        if(fmod(timer,(1/bpm)) >= pushButtonThreshold )
+        scoreNum +=1;
+            else    
+        scoreNum = 0;
+        
         if(board[BallPosX-1][BallPosY] == 0 && ongoing_animation == 0)
         {
             animation_timer = 0;
             ongoing_animation = 1;
-            idleTimer = 0;
+            
             glutTimerFunc(0,animate_movement,LEFT);
  
-            
             board[BallPosX][BallPosY] = 0;
             BallPosX--;
             board[BallPosX][BallPosY] = 1;
-            
-            if(fmod(timer,(1/bpm)) >= pushButtonThreshold )
-                scoreNum +=1;
-            else
-                scoreNum = 0;
-            
         }
         else if(board[BallPosX-1][BallPosY] == 2 && ongoing_animation == 0)
         {
             animation_timer = 0;
             ongoing_animation = 1;
-            idleTimer = 0;
             reduceHealthOfEnemy(BallPosX-1,BallPosY);
             glutTimerFunc(0,animate_hit,LEFT);
             
         }
+        printMatrix();
         break;
     case 'd':
+        idleTimer = 0; 
+        if(fmod(timer,(1/bpm)) >= pushButtonThreshold )
+            scoreNum +=1;
+        else
+            scoreNum = 0;
         if(board[BallPosX+1][BallPosY] == 0 && ongoing_animation == 0)
-        {
-            
+        {            
             animation_timer = 0;        
-            ongoing_animation = 1;      
-            idleTimer = 0;              
+            ongoing_animation = 1;                   
             glutTimerFunc(0,animate_movement,RIGHT);
  
             board[BallPosX][BallPosY] = 0;
             BallPosX++;
             board[BallPosX][BallPosY] = 1;
-            
-            if(fmod(timer,(1/bpm)) >= pushButtonThreshold )
-                scoreNum +=1;
-            else
-                scoreNum = 0;
-            
+                                                
         }
         else if(board[BallPosX+1][BallPosY] == 2 && ongoing_animation == 0)
         {
             animation_timer = 0;
             ongoing_animation = 1;
-            idleTimer = 0; 
             reduceHealthOfEnemy(BallPosX+1,BallPosY);
             glutTimerFunc(0,animate_hit,RIGHT);
             
         }
+        printMatrix();
         break;
     case 'j':
         phi -= delta_phi;
@@ -640,7 +690,8 @@ static void on_reshape(int width, int height)
 
 static void on_display(void)
 {   
-   /* printf("%f %f\n",timer,fmod(timer,1/bpm));*/
+    
+   /*printf("%f\n",fmod(timer,1/bpm));*/
     
     
     GLfloat light_position_spotlight[] = {ball_x_movement,ball_y_movement,1.5,1};
@@ -721,13 +772,7 @@ static void on_display(void)
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     gluPerspective(90, 1, 1, 40);
-   /*
-    printf("5*cos(theta)*cos(phi)+ball_x_movement = %f\n", 5 * cos(theta) * cos(phi)+ball_x_movement);
-    printf("5 * cos(theta) * sin(phi)+ball_y_movement = %f\n",5 * cos(theta) * sin(phi)+ball_y_movement);
-    printf("5 * sin(theta) = %f\n", 5 * sin(theta));
-    printf("ball_x_movement: %0.2f\n",ball_x_movement);
-    printf("ball_y_movement: %0.2f\n",ball_y_movement);
-    */
+
     
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
@@ -762,8 +807,8 @@ static void on_display(void)
     GLfloat ambient_coeffsFloor[] = {0.5, 0.164706, 0.164706, 1 };
     GLfloat diffuse_coeffsFloor[] = {0.5, 0.164706, 0.164706, 1 };
     
-    GLfloat ambient_coeffsFloorBlue[] = {0.5, 0.164706, 0.8, 1 };
-    GLfloat diffuse_coeffsFloorBlue[] = {0.5, 0.164706, 0.8, 1 };
+   /* GLfloat ambient_coeffsFloorBlue[] = {0.5, 0.164706, 0.8, 1 };
+    GLfloat diffuse_coeffsFloorBlue[] = {0.5, 0.164706, 0.8, 1 };*/
     
     GLfloat specular_coeffs[] = {0.2, 0.2, 0.2, 1 };
 
@@ -786,25 +831,39 @@ static void on_display(void)
     /*Kocke koje obelezavaju platforme na kojima ce se nalaziti igrac i protivnici*/
     int i,j;
     glPushMatrix();
-        glTranslatef(0,0,-0.1);
-        for(i=0;i<10;i++)
+        
+        for(i=0;i<22;i++)
         {
             glPushMatrix();
-            for(j=0;j<10;j++)
+            for(j=0;j<22;j++)
             {
-               
-                changeMaterial(ambient_coeffsBlack,diffuse_coeffsBlack,specular_coeffs);
-                glutWireCube(0.2);
-                changeMaterial(ambient_coeffsFloor,diffuse_coeffsFloor,specular_coeffs);              
-                glutSolidCube(0.2);
-                glTranslatef(-0.2,0,0);
+                if(board[i][j] == -1)
+                {
+                    glPushMatrix();
+                    glTranslatef(-0.2*i+0.2,-0.2*j+0.2,0.1);
+                    changeMaterial(ambient_coeffsBlack,diffuse_coeffsBlack,specular_coeffs);
+                    glutWireCube(0.2);
+                    changeMaterial(ambient_coeffsFloor,diffuse_coeffsFloor,specular_coeffs);              
+                    glutSolidCube(0.2);
+                    glPopMatrix();
+                    
+                }
+                else
+                {
+                    glPushMatrix();
+                    glTranslatef(-0.2*i+0.2,-0.2*j+0.2,-0.1);
+                    changeMaterial(ambient_coeffsBlack,diffuse_coeffsBlack,specular_coeffs);
+                    glutWireCube(0.2);
+                    changeMaterial(ambient_coeffsFloor,diffuse_coeffsFloor,specular_coeffs);              
+                    glutSolidCube(0.2);
+                    glPopMatrix();
+                }
             }
             glPopMatrix();
-            glTranslatef(0,-0.2,0);
         }
     glPopMatrix();
     
-    glPushMatrix();
+   /* glPushMatrix();
         glTranslatef(-2,0,0.1);
         for(i =0;i<10;i++)
         {
@@ -832,16 +891,16 @@ static void on_display(void)
             glutSolidCube(0.2);
             glTranslatef(-0.2,0,0);
         }
-    glPopMatrix();
+    glPopMatrix(); */
     
-    glPushMatrix();
+   /* glPushMatrix();
     glTranslatef(-2,-0.8,-0.1);
         for(i=0;i<4;i++)
         {
             glPushMatrix();
             for(j=0;j<10;j++) 
             {
-                    if(i != 0 && i!=3) /*putic*/
+                    if(i != 0 && i!=3) 
                     {
                         
                         changeMaterial(ambient_coeffsBlack,diffuse_coeffsBlack,specular_coeffs);
@@ -849,7 +908,7 @@ static void on_display(void)
                         changeMaterial(ambient_coeffsFloorBlue,diffuse_coeffsFloorBlue,specular_coeffs);
                         glutSolidCube(0.2);
                     }
-                    else if(j!=0) /*zid putica*/
+                    else if(j!=0) 
                     {
                         glPushMatrix();
                         glTranslatef(0,0,0.2);
@@ -866,7 +925,7 @@ static void on_display(void)
             glPopMatrix();
             glTranslatef(0,-0.2,0);
         }
-    glPopMatrix();
+    glPopMatrix();  */
     
     glPushMatrix();
         glTranslatef(ball_x_movement,ball_y_movement,ball_z_position);
@@ -879,14 +938,20 @@ static void on_display(void)
     
     /*Neprijatelji*/
 
+    int isEnemyMoving; /*Ako je broj veci od 70 neprijatelj se pomera*/
 
     int nE;
-    for(nE=0;nE<3;nE++)
+    for(nE=0;nE<NumberOfEnemies;nE++)
     {
+        isEnemyMoving = rand() %100;
+        
         glPushMatrix();
         if(blobs[nE].health != 0)
         {
-            glTranslatef(-0.2*(blobs[nE].posX -1),-0.2*(blobs[nE].posY - 1),0.1);
+            if(isEnemyMoving >= 70 && fmod(timer,1/bpm) >= (1/bpm) - 1)
+                enemyMove(blobs,nE,nE%2);
+            
+            glTranslatef(-0.2*(blobs[nE].posX - 1),-0.2*(blobs[nE].posY - 1),blobs[nE].posZ);
             changeMaterial(ambient_coeffsEnemyBlobGreen,diffuse_coeffsEnemyBlobGreen,specular_coeffs);
             glutSolidCube(0.15);
         }
