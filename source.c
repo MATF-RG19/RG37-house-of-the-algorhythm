@@ -934,6 +934,7 @@ static void on_display(void)
     glRasterPos2i((int)(262.5+movementPerSecond) % 350, 40);
     glBitmap(16,48,0.0, 0.0,0.0, 0.0,rasters);
     
+    /*Osvetljenje*/
 
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
@@ -949,7 +950,6 @@ static void on_display(void)
               0, 0, 1);
 
     glEnable(GL_LIGHTING);
-    /*glScalef(3,3,3);*/
 
 
     GLfloat spot_direction[] = {0,0,-1};
@@ -961,9 +961,6 @@ static void on_display(void)
     glLightfv(GL_LIGHT1, GL_POSITION, light_position);
 
     
-    
-    
-    /*rename Colors*/
     GLfloat ambient_coeffsEnemyBlobGreen[] = {0.1, 0.7, 0.4 ,0.4};
     GLfloat diffuse_coeffsEnemyBlobGreen[] = {0.1, 0.7, 0.4 ,0.4};
     
@@ -1155,6 +1152,3 @@ static void on_display(void)
     
     glutSwapBuffers();
 }
-
-
-
