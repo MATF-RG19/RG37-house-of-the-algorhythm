@@ -24,13 +24,18 @@ dolaženja plavih linija ka središnjem kvadratu) pomera svog lika i da savlada 
 | <kbd>s</kbd>  |Kretanje ka dole levo|
 | <kbd>a</kbd>  |Kretanje ka dole desno|
 | <kbd>d</kbd>  |Kretanje ka gore desno|
+| <kbd>r</kbd>  |Resetovanje igre|
  
  
  # Instalacija
  Preuzmie folder sa igricom
- U folderu uradie komande:
- make  
+ 
+ Unutar foldera uradite komande:
+ 
+ make
+ 
  ./Hota
  
  # Autor
- Nikola Maliković
+ Nikola Maliković mi19421 
+ 
